@@ -37,7 +37,7 @@ public class CuzClassLoader extends ClassLoader {
         try (InputStream is = new FileInputStream(filePath)) {
             byte[] tmpByte = new byte[1024];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int n = 0;
+            int n;
             while ((n = is.read(tmpByte)) != -1) {
                 out.write(tmpByte, 0, n);
             }
