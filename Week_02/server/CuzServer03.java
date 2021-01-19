@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * 同步非阻塞线程池版
@@ -13,7 +12,7 @@ import java.util.concurrent.Executors;
 public class CuzServer03 {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(8803);
-        ExecutorService pool = Executors.newFixedThreadPool(20);
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(2, 2, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<>(10000));
         while (true) {
             try {
                 final Socket socket = serverSocket.accept();
