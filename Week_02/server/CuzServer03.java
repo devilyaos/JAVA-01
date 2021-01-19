@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 public class CuzServer03 {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(8803);
+        // 此处压测性能不高, 与ppt命令结论差异较大, 暂怀疑与机器有效核数有关
         ThreadPoolExecutor pool = new ThreadPoolExecutor(2, 2, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<>(10000));
         while (true) {
             try {
