@@ -1,5 +1,7 @@
 package io.github.devilyaos.geekstudy.inbound;
 
+import io.github.devilyaos.geekstudy.filter.HttpRequestFilter;
+import io.github.devilyaos.geekstudy.filter.HttpRequestHeaderFilter;
 import io.github.devilyaos.geekstudy.outbound.HttpOutboundHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -16,9 +18,16 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
      */
     private HttpOutboundHandler handler;
 
+    /**
+     * 请求处理过滤器
+     */
+    private HttpRequestFilter filter;
+
     public HttpInboundHandler() {
         // 初始化outbound的处理
         handler = new HttpOutboundHandler();
+        // 初始化请求过滤器
+        filter = new HttpRequestHeaderFilter();
     }
 
     /**
@@ -41,6 +50,9 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
             FullHttpRequest fullRequest = (FullHttpRequest) msg;
+            // 调用outbound的处理逻辑
+            // TODO 此处需要了解不在该逻辑执行filter的原因
+            handler.handle(fullRequest, ctx, filter);
         } catch (Exception e) {
             System.err.println("发生异常信息: " + e.getMessage() + ", 读取中断");
         } finally {
