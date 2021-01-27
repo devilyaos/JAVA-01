@@ -12,12 +12,6 @@ public class ServiceFoundService {
 
     private static List<String> urlList = new ArrayList<>();
 
-    {
-        urlList.add("http://localhost:8801");
-        urlList.add("http://localhost:8802");
-        urlList.add("http://localhost:8803");
-    }
-
     /**
      * 使用静态方法提供接口, 无需初始化
      * @throws IllegalAccessException 非法权限
@@ -32,6 +26,14 @@ public class ServiceFoundService {
      */
     public static List<String> getUrlList() {
         return urlList;
+    }
+
+    /**
+     * 注册url信心
+     * @param url 目标地址
+     */
+    public static synchronized void addUrl(String url) {
+        urlList.add(url);
     }
 
 }

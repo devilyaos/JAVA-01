@@ -49,6 +49,7 @@ public class HttpInboundServer {
      * 启动监听
      */
     public void start() throws InterruptedException {
+        System.out.println("网关服务正在启动...");
         EventLoopGroup parentGroup = new NioEventLoopGroup(1);
         EventLoopGroup childGroup = new NioEventLoopGroup(workLoopNum);
 
@@ -95,7 +96,7 @@ public class HttpInboundServer {
                     // 设置handler
                     // 指定日志级别
                     .handler(new LoggingHandler(LogLevel.DEBUG))
-                    .handler(new HttpInboundChannelProxy());
+                    .childHandler(new HttpInboundChannelProxy());
             Channel ch = serverBootstrap.bind(watchPort).sync().channel();
             System.out.println("服务已启动, 监听地址为: http://127.0.0.1:" + watchPort + '/');
             // 当服务停止时, 需要优雅关闭
@@ -104,6 +105,7 @@ public class HttpInboundServer {
             // 无论如何, 最终要关闭线程池
             parentGroup.shutdownGracefully();
             childGroup.shutdownGracefully();
+            System.out.println("网关关闭!!!");
         }
     }
 }

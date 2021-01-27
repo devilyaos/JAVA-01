@@ -48,10 +48,10 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("开始Inbound的channelRead处理...");
         try {
             FullHttpRequest fullRequest = (FullHttpRequest) msg;
             // 调用outbound的处理逻辑
-            // TODO 此处需要了解不在该逻辑执行filter的原因
             handler.handle(fullRequest, ctx, filter);
         } catch (Exception e) {
             System.err.println("发生异常信息: " + e.getMessage() + ", 读取中断");
@@ -64,6 +64,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
             // 每对这个ByteBuf对象增加一个引用，需要调用ByteBuf.retain()方法，而每减少一个引用，需要调用ByteBuf.release()方法。
             // 当这个ByteBuf对象的引用计数值为0时，表示此对象可回收。
             ReferenceCountUtil.release(msg);
+            System.out.println("Inbound的channelRead调度完成...");
         }
     }
 }

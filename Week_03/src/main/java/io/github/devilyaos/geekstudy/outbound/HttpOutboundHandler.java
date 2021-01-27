@@ -70,34 +70,35 @@ public class HttpOutboundHandler implements OutboundHandler {
 
     @Override
     public void handle(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, HttpRequestFilter requestFilter) {
+        System.out.println("开始Outbound的handle处理...");
+        // 如果路径是http://127.0.0.1:8888/reportRoute?target=http://127.0.0.1:8801格式, 则添加进地址列表
+        String uri = fullRequest.uri();
+        if (uri.startsWith("/reportRoute?target=")) {
+            proxyPool.submit(() -> dealAddRouteList(fullRequest, ctx, uri));
+            return;
+        }
         String targetAddress = router.route(ServiceFoundService.getUrlList());
         String finalUrl = targetAddress + fullRequest.uri();
         requestFilter.filter(fullRequest, ctx);
         proxyPool.submit(() -> fetchGet(fullRequest, ctx, finalUrl));
+        System.out.println("Outbound的handle调度完成...");
     }
 
     /**
-     * 发出get请求
-     * @param fullRequest 请求报文
-     * @param ctx 上下文
-     * @param url 请求地址
+     * 添加进路由列表
+     * @param uri 请求路径
      */
-    private void fetchGet(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final String url) {
-        Request request = new Request.Builder().url(url).get().addHeader("study-group", "java0101-req").build();
-        Response response = null;
-        try {
-            response = httpClient.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.println("请求发生异常");
-            throw new GatewayException("当前请求无法处理");
-        }
+    private void dealAddRouteList(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final String uri) {
         FullHttpResponse fullHttpResponse = null;
         try {
-            byte[] body = response.body().bytes();
-            fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(body));
-            fullHttpResponse.headers().set("Content-Length", response.body().contentLength());
-            responseFilter.filter(fullHttpResponse);
-        } catch (IOException e) {
+            System.out.println("开始注册服务...");
+            String targetUrl = uri.substring(uri.indexOf("/reportRoute?target=") + 20);
+            ServiceFoundService.addUrl(targetUrl);
+            System.out.println("成功注册: " + targetUrl);
+            byte[] byteArr = "SUCCESS".getBytes();
+            fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(byteArr));
+            fullHttpResponse.headers().set("Content-Length", byteArr.length);
+        } catch (Exception e) {
             e.printStackTrace();
             fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NO_CONTENT);
             ctx.close();
@@ -109,6 +110,55 @@ public class HttpOutboundHandler implements OutboundHandler {
                     ctx.write(fullHttpResponse);
                 }
             }
+            ctx.flush();
+            System.out.println("处理完成啦!!!");
+            System.out.println("============================");
+        }
+    }
+
+    /**
+     * 发出get请求
+     * @param fullRequest 请求报文
+     * @param ctx 上下文
+     * @param url 请求地址
+     */
+    private void fetchGet(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final String url) {
+        System.out.println("Outbound的fetchGet开始执行...");
+        Request request = new Request.Builder().url(url).get().addHeader("study-group", "java0101-req").build();
+        Response response = null;
+        FullHttpResponse fullHttpResponse = null;
+        try {
+            System.out.println("即将请求" + url + " ...");
+            byte[] body;
+            long contentLength;
+            if (url.endsWith(".ico") || url.endsWith(".js") || url.endsWith(".css")) {
+                System.out.println("静态资源请求, 不处理");
+                body = new byte[0];
+                contentLength = 0;
+            } else {
+                response = httpClient.newCall(request).execute();
+                System.out.println("开始处理返回结果...");
+                body = response.body().bytes();
+                contentLength = response.body().contentLength();
+            }
+            fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(body));
+            fullHttpResponse.headers().set("Content-Length", contentLength);
+            responseFilter.filter(fullHttpResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NO_CONTENT);
+            ctx.close();
+        } finally {
+            if (fullRequest != null) {
+                if (!HttpUtil.isKeepAlive(fullRequest)) {
+                    ctx.write(fullHttpResponse).addListener(ChannelFutureListener.CLOSE);
+                } else {
+                    ctx.write(fullHttpResponse);
+                }
+            }
+            ctx.flush();
+            System.out.println("处理完成啦!!!");
+            System.out.println("============================");
         }
     }
 }
