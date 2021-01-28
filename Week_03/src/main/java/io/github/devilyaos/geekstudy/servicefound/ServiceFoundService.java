@@ -4,11 +4,14 @@ import io.github.devilyaos.geekstudy.exception.GatewayException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 服务发现服务类
  */
 public class ServiceFoundService {
+
+    private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private static List<String> urlList = new ArrayList<>();
 
@@ -25,7 +28,12 @@ public class ServiceFoundService {
      * @return 所有的链接列表
      */
     public static List<String> getUrlList() {
-        return urlList;
+        try {
+            lock.readLock().tryLock();
+            return urlList;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -33,7 +41,12 @@ public class ServiceFoundService {
      * @param url 目标地址
      */
     public static synchronized void addUrl(String url) {
-        urlList.add(url);
+        try {
+            lock.writeLock().tryLock();
+            urlList.add(url);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
 }

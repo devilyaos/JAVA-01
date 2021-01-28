@@ -3,6 +3,7 @@ package io.github.devilyaos.geekstudy.inbound;
 import io.github.devilyaos.geekstudy.filter.HttpRequestFilter;
 import io.github.devilyaos.geekstudy.filter.HttpRequestHeaderFilter;
 import io.github.devilyaos.geekstudy.outbound.HttpOutboundHandler;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -50,9 +51,11 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("开始Inbound的channelRead处理...");
         try {
-            FullHttpRequest fullRequest = (FullHttpRequest) msg;
-            // 调用outbound的处理逻辑
-            handler.handle(fullRequest, ctx, filter);
+            if (msg instanceof FullHttpRequest) {
+                FullHttpRequest fullRequest = (FullHttpRequest) msg;
+                // 调用outbound的处理逻辑
+                handler.handle(fullRequest, ctx, filter);
+            }
         } catch (Exception e) {
             System.err.println("发生异常信息: " + e.getMessage() + ", 读取中断");
         } finally {
@@ -65,6 +68,15 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
             // 当这个ByteBuf对象的引用计数值为0时，表示此对象可回收。
             ReferenceCountUtil.release(msg);
             System.out.println("Inbound的channelRead调度完成...");
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.exceptionCaught(ctx, cause);
+        Channel channel = ctx.channel();
+        if (channel.isActive()) {
+            ctx.close();
         }
     }
 }
