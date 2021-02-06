@@ -9,7 +9,7 @@ public class ThreadTest3 extends BaseHomeWorkSupport {
     public static void main(String[] args) {
         ExecutorService pool = Executors.newFixedThreadPool(1);
         long startTime = System.currentTimeMillis();
-        pool.submit(() -> {
+        pool.execute(() -> {
             printConsole(startTime);
         });
         pool.shutdown();

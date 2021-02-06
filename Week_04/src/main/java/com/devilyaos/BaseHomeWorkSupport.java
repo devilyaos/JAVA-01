@@ -9,7 +9,14 @@ public class BaseHomeWorkSupport {
         System.out.println("使用时间：" + (System.currentTimeMillis() - startTime) + " ms");
     }
 
-    private static int sum() {
+    protected static int getCalcResult(long startTime) {
+        int result = sum();
+        System.out.println("异步计算结果为：" + result);
+        System.out.println("使用时间：" + (System.currentTimeMillis() - startTime) + " ms");
+        return result;
+    }
+
+    protected static int sum() {
         return fibo(36);
     }
 
