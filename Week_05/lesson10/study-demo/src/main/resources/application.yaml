@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: devilyaos-study-demo
+study:
+  enabled: true
+  student:
+    name: devilyaos
+  klass:
+    name: demo-klass
+  school:
+    name: test-school
