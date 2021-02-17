@@ -16,5 +16,6 @@
         <module>study-autoconfig</module>
         <module>study-school</module>
         <module>study-demo</module>
+        <module>study-jdbc</module>
     </modules>
 </project>
