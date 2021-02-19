@@ -1,5 +1,8 @@
 package com.devilyaos.study.jdbc;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,11 +15,15 @@ public class OnlyJdbcService {
 
     public static void main(String[] args) {
         // 连接数据库
-        Connection connection = getConnection();
+        // JDBC数据源
+//        Connection connection = getJdbcConnection();
+        // HIKARI连接池数据源
+        Connection connection = getHikariConnection();
         if (connection == null) {
             System.err.println("===========================");
             System.err.println("获取数据库连接时发生异常");
             System.err.println("===========================");
+            return;
         }
         PreparedStatement addPst = null;
         PreparedStatement uptPst = null;
@@ -107,7 +114,7 @@ public class OnlyJdbcService {
      * 获取数据库连接实例
      * @return 数据库连接实例
      */
-    private static Connection getConnection() {
+    private static Connection getJdbcConnection() {
         String url="jdbc:mysql://127.0.0.1:3306/test?characterEncoding=utf8&useSSL=false";
         String user="root";
         String password="testtest";
@@ -116,6 +123,26 @@ public class OnlyJdbcService {
             return DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取数据库连接池配置
+     * @return 连接池中的链接
+     */
+    private static Connection getHikariConnection() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://127.0.0.1:3306/test");
+        config.setUsername("root");
+        config.setPassword("testtest");
+        config.addDataSourceProperty("characterEncoding", "utf8");
+        config.addDataSourceProperty("useSSL", "false");
+        HikariDataSource dataSource = new HikariDataSource(config);
+        try {
+            return dataSource.getConnection();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
             return null;
         }
     }

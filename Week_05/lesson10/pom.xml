@@ -17,5 +17,6 @@
         <module>study-school</module>
         <module>study-demo</module>
         <module>study-jdbc</module>
+        <module>study-hikari</module>
     </modules>
 </project>
