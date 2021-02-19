@@ -11,7 +11,7 @@ import java.sql.SQLException;
 /**
  * 纯jdbc操作
  */
-public class OnlyJdbcService {
+public class DatasourceTestDemoService {
 
     public static void main(String[] args) {
         // 连接数据库
