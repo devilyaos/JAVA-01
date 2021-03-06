@@ -13,6 +13,7 @@ public class Write1mRecordsDemo {
 
     // 约17s左右, 如果需要提高插入性能, 需要不断调整每次插入的数据量, 拼接成的sql根据values数量不同执行时长也不同
     // 当sql太长, 会导致执行失败或数据库宕机
+    // 可以设置多线程, id使用程序生成, 通过设置不同步长或起始点进行多线程插入提高效率
     public static void main(String[] args) {
         Connection connection = getHikariConnection();
         PreparedStatement addPst = null;
